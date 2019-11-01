@@ -7,3 +7,5 @@
 - pretify screen
 
 - pretify code
+
+- add alpha beta minimax
