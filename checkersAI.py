@@ -1,6 +1,5 @@
 import pygame
 from math import inf as infinity
-from random import choice
 import time
 from piece import Piece
 
@@ -22,13 +21,14 @@ BOARD = [
 	[Piece(0, 7, 0), Piece(1, 7,-1), Piece(2, 7, 0), Piece(3, 7,-1), Piece(4, 7, 0), Piece(5, 7,-1), Piece(6, 7, 0), Piece(7, 7,-1)],
 ]
 
-
 #IMAGES
 ORANGE = pygame.image.load('imgs\\orange.png')
 BROWN = pygame.image.load('imgs\\brown.png')
 ORANGEQ = pygame.image.load('imgs\\orangeQ.png')
 BROWNQ = pygame.image.load('imgs\\brownQ.png')
-SELECTED = pygame.image.load('imgs\\selected.png')
+SELECTED_END = pygame.image.load('imgs\\selected_end.png')
+SELECTED_KILL = pygame.image.load('imgs\\selected_kill.png')
+SELECTED_ORIGN = pygame.image.load('imgs\\selected_orign.png')
 BOARD_IMG = pygame.image.load('imgs\\board.png')
 PREV = pygame.image.load('imgs\\prev.png')
 
@@ -55,7 +55,6 @@ def text(screen, size, text, bg, fg, cx, cy):
 	textRect.center = (cx, cy)
 	screen.blit(text, textRect)
 
-
 def draw_pieces(screen, inv, board):
 	if inv:
 		tCOMP = -COMP
@@ -66,33 +65,33 @@ def draw_pieces(screen, inv, board):
 	for y, row in enumerate(board):
 		for x, col in enumerate(row):
 			if board[y][x].value == tCOMP and not board[y][x].queen:
-				board[y][x].draw(ORANGE, (50+x*50, 50+y*50), screen)
+				board[y][x].draw_piece(ORANGE, (50+x*50, 50+y*50), screen)
 				
 			elif board[y][x].value == tHUMAN and not board[y][x].queen:
-				board[y][x].draw(BROWN, (50+x*50, 50+y*50), screen)
+				board[y][x].draw_piece(BROWN, (50+x*50, 50+y*50), screen)
 				
 			elif board[y][x].value == tCOMP and board[y][x].queen:
-				board[y][x].draw(ORANGEQ, (50+x*50, 50+y*50), screen)
+				board[y][x].draw_piece(ORANGEQ, (50+x*50, 50+y*50), screen)
 				
 			elif board[y][x].value == tHUMAN and board[y][x].queen:
-				board[y][x].draw(BROWNQ, (50+x*50, 50+y*50), screen)
+				board[y][x].draw_piece(BROWNQ, (50+x*50, 50+y*50), screen)
 
-def select_pieces(screen, list, board):
+def select_pieces(screen, list, board, col):
 	for elem in list:
 		x, y = elem
-		board[y][x].select(screen, SELECTED, (50+x*50, 50+y*50))
+		board[y][x].select_piece(screen, col, (50+x*50, 50+y*50))
 
+def clear_selections(lists):
+	for list in lists:
+		list.clear()
 """
 				BOARD FUNCTIONS
 """
 def get_board_values(board):
-	bo = []
-	for y, row in enumerate(board):
-		aux_list = []
-		for x, col in enumerate(row):
-			aux_list.append(board[y][x].value)
-		bo.append(aux_list)
-	return bo
+	return [[col.value for col in row] for row in board]
+	
+def make_copy(board):
+	return [row[:] for row in board]
 
 def get_index_click(x, y):
 	i = (x-50)//50
@@ -159,48 +158,45 @@ def make_move(board, ix, iy, x, y, to_kill, SYM):
 	for elem in to_kill:
 		a, b = elem
 		board[b][a] = Piece(a, b, 0)
+	
 	if y is 0 and SYM == HUMAN:
 		board[y][x].queen = True
 	if y is 7 and SYM == COMP:
 		board[y][x].queen = True
 
 def unmake_move(board, ix, iy, x, y, tx, ty, queen, to_revive, SYM):
-	board[iy][ix] = Piece(ix, iy, 0)
 	board[y][x] = Piece(tx, ty, SYM)
 	board[y][x].queen = queen
+	board[iy][ix] = Piece(ix, iy, 0)
 	
 	for elem in to_revive:
 		a, b = elem
 		board[b][a] = Piece(a, b, -SYM)
-	
-def wins(player, board):
-	if len(calculate_moves(-player, board)) is 0:
-		return True
-	else:
-		return False
 
 def evaluate(board):
 	scoreCOMP = 0
 	scoreHUMAN = 0
 	for y, row in enumerate(board):
 			for x, col in enumerate(row):
-				if board[y][x].value == 1:
-					if board[y][x].queen:
-						scoreCOMP += 20
-					else:
-						scoreCOMP += 10+y
-				elif board[y][x].value == -1:
-					if board[y][x].queen:
-						scoreHUMAN += 20
-					else:
-						scoreHUMAN += 10+(7-y)
+				val, queen = board[y][x].value, board[y][x].queen
+				if val is COMP and queen:
+					scoreCOMP += 20
+				elif val is COMP and not queen:
+					scoreCOMP += 10+y
+				elif val is HUMAN and queen:
+					scoreHUMAN += 20
+				elif val is HUMAN and not queen:
+					scoreHUMAN += 10+(7-y)
 	if scoreCOMP == 0:
-		score = -120
+		score = 120*(-COMP)
 	elif scoreHUMAN == 0:
-		score = 120
+		score = 120*(-HUMAN)
 	else:
 		score = scoreCOMP-scoreHUMAN
 	return score
+
+def wins(player, board):
+	return len(calculate_moves(-player, board)) is 0
 	
 def game_over(board):
     return wins(COMP, board) or wins(HUMAN,board)
@@ -222,10 +218,11 @@ def minimax(board, depth, player):
 		x, y = move[2]
 		
 		tx, ty = ix, iy
+		queen = board[ty][tx].queen
 		
 		make_move(board, ix, iy, x, y, to_kill, player)		
 		score = minimax(board, depth-1, -player)
-		unmake_move(board, x, y, ix, iy, tx, ty, board[ty][tx].queen,to_kill, player)
+		unmake_move(board, x, y, ix, iy, tx, ty, queen, to_kill, player)
 		
 		score[0], score[1], score[2], score[3], score[4] = ix, iy, x, y, to_kill
 		if player == COMP:
@@ -244,15 +241,17 @@ def game_loop(screen, human_turn, inv, depth_max):
 	running = True
 	first_clik = False
 	select_time = False
-	list_sel = []
-	board = BOARD[:]
-	prev_board = []
-	prev_board.append(BOARD[:])
-	moves = calculate_moves(HUMAN, board)
+	kill_sel = []
+	orign_sel = []
+	end_sel = []	
+	board = make_copy(BOARD)
+	prev_board = [make_copy(BOARD)]
+	if human_turn:
+		moves = calculate_moves(HUMAN, board)
 	xC, yC = 0, 0
+	txC, tyC = 0, 0
 	while running:
 		#PROCESS EVENTS
-		txC, tyC = 0, 0
 		x, y = pygame.mouse.get_pos()
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -261,61 +260,61 @@ def game_loop(screen, human_turn, inv, depth_max):
 			if event.type == pygame.MOUSEBUTTONUP:
 				xC, yC = pygame.mouse.get_pos()
 				txC, tyC = xC, yC
-
 		#UPDATE
 		if human_turn:
 			if game_over(board):
 				running = False
 			if txC > 450 and txC < 500 and tyC > 50 and tyC < 100 and len(prev_board) > 1:
-				board = [row[:] for row in prev_board[-1]]
-				prev_board.pop()
-				list_sel.clear()
+				board = make_copy(prev_board.pop())
 				moves = calculate_moves(HUMAN, board)
-				for move in moves:
-					if move[0] not in list_sel:
-						list_sel.append(move[0])
+				xC, yC = 0, 0
+				txC, tyC = 0, 0
+				clear_selections([kill_sel, end_sel, orign_sel])
 			if xC > 50 and xC < 450 and yC > 50 and yC < 450:
 				i, j = get_index_click(xC, yC)
 				if board[j][i].value is HUMAN:
-					list_sel.clear()
+					clear_selections([kill_sel, end_sel, orign_sel])
 					ix, iy = 0, 0
 					for move in moves:
-						orig, kill, fin = move
+						orig, kills, fin = move
 						if (i, j) == orig:
 							ix, iy = i, j
-							if (ix, iy) not in list_sel:
-								list_sel.append((ix, iy))
-							if fin not in list_sel:
-								list_sel.append(fin)
+							if (ix, iy) not in orign_sel:
+								orign_sel.append((ix, iy))
+							for kill in kills:
+								if kill not in kill_sel:
+									kill_sel.append(kill)
+							if fin not in end_sel:
+								end_sel.append(fin)
 							first_clik = True
 							select_time = True
 				elif board[j][i].value is 0 and first_clik:
 					for move in moves:
-						orig, kill, fin = move
+						orig, kills, fin = move
 						if ((ix, iy), (i, j)) == (orig, fin):
-							prev_board.append([row[:] for row in board])
-							make_move(board, ix, iy, i, j, kill, HUMAN)
+							prev_board.append(make_copy(board))
+							make_move(board, ix, iy, i, j, kills, HUMAN)
 							prev = 1
 							human_turn = False
 							xC, yC = 0, 0
 					first_clik = False
 					select_time = False
-					list_sel.clear()
+					clear_selections([kill_sel, end_sel, orign_sel])
 					
 				else:
 					first_clik = False
 					select_time = False
-					list_sel.clear()
+					clear_selections([kill_sel, end_sel, orign_sel])
 			else:
 				select_time = True
 				for move in moves:
-					if move[0] not in list_sel:
-						list_sel.append(move[0])
+					if move[0] not in orign_sel:
+						orign_sel.append(move[0])
 		else:
 			if game_over(board):
 				running = False
 			else:
-				copy = [row[:] for row in board]
+				copy = make_copy(board)
 				move = minimax(copy, depth_max, COMP)
 				ix, iy, x, y, to_kill, score = move
 				make_move(board, ix, iy, x, y, to_kill, COMP)
@@ -327,7 +326,9 @@ def game_loop(screen, human_turn, inv, depth_max):
 		screen.fill(DARK_BLUE)
 		screen.blit(BOARD_IMG,(50, 50))
 		if select_time:
-			select_pieces(screen, list_sel, board)
+			select_pieces(screen, kill_sel, board, SELECTED_KILL)
+			select_pieces(screen, orign_sel, board, SELECTED_ORIGN)
+			select_pieces(screen, end_sel, board, SELECTED_END)
 		if not human_turn:
 			text(screen, 20, 'Thinking...', DARK_BLUE, WHITE, 250, 25)
 		draw_pieces(screen, inv, board)
@@ -482,20 +483,6 @@ def main():
 	pygame.display.set_caption('Damas')
 	
 	menu_loop(screen)
-	
-	"""board = [
-		[Piece(0, 0, 0), Piece(1, 0, 0), Piece(2, 0, 0), Piece(3, 0, 0), Piece(4, 0, 0), Piece(5, 0, 0), Piece(6, 0, 0), Piece(7, 0, 0)],
-		[Piece(0, 1, 0), Piece(1, 1, 0), Piece(2, 1, 0), Piece(3, 1, 0), Piece(4, 1, 0), Piece(5, 1, 0), Piece(6, 1, 0), Piece(7, 1, 0)],
-		[Piece(0, 2, 0), Piece(1, 2, 0), Piece(2, 2, 0), Piece(3, 2, 0), Piece(4, 2, 0), Piece(5, 2, 0), Piece(6, 2, 0), Piece(7, 2, 0)],
-		[Piece(0, 3, 0), Piece(1, 3, 0), Piece(2, 3, 0), Piece(3, 3, 0), Piece(4, 3, 0), Piece(5, 3, 0), Piece(6, 3, 0), Piece(7, 3, 0)],
-		[Piece(0, 4, 0), Piece(1, 4, 0), Piece(2, 4, 1), Piece(3, 4, 0), Piece(4, 4, 0), Piece(5, 4, 0), Piece(6, 4, 0), Piece(7, 4, 0)],
-		[Piece(0, 5, 0), Piece(1, 5, 0), Piece(2, 5, 0), Piece(3, 5, 0), Piece(4, 5, 0), Piece(5, 5, 0), Piece(6, 5, 0), Piece(7, 5, 0)],
-		[Piece(0, 6,-1), Piece(1, 6, 0), Piece(2, 6, 0), Piece(3, 6, 0), Piece(4, 6, 0), Piece(5, 6, 0), Piece(6, 6, 0), Piece(7, 6, 0)],
-		[Piece(0, 7, 0), Piece(1, 7, 0), Piece(2, 7, 0), Piece(3, 7, 0), Piece(4, 7, 0), Piece(5, 7, 0), Piece(6, 7, 0), Piece(7, 7, 0)],
-	]
-	copy = [row[:] for row in board]
-	move = minimax(copy, 0, COMP)
-	print(move)"""
 
 	pygame.quit()
 
