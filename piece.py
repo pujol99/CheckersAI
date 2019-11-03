@@ -9,278 +9,380 @@ class Piece:
 		self.moves = []
 		self.queen = False
 		
-		self.topl = True
-		self.topr = True
-		self.downl = True
-		self.downr = True
-		
 		self.toplk = True
 		self.toprk = True
 		self.downlk = True
 		self.downrk = True
 	
-	def posible_moves(self, bo, rec=False, x=None, y=None, kills=0):
+	def posible_moves(self, bo, rec=False, x=None, y=None, kills=0, no_kill=True, tr=True, tl=True, dr=True, dl=True):
+		"""
+			:param bo: recieves a game state
+			:param rec: if a kill has been done we only look other kill movements (not queen)
+			:param x, y: initial position
+			:param kills: kill counter of current path
+			:param no_kill: queen moves with no killing, they are the first ones to look
+			:param tr, tl, dr, dl: check certain position or not
+			:return: structure -> list of tuples: (end, kill, nkills)
+		"""
+		#LOCAL VARIABLES
 		value = self.value
-		if value < 0:
+		if value is -1:
 			limity = 0
+			limitxr = 7
+			limitxl = 0
 		else:
 			limity = 7
-		if x is None or y is None:
+			limitxr = 7
+			limitxl = 0
+		if x is None:
 			x, y = self.x, self.y
 
+		#NOT QUEEN
 		if not self.queen:
-			#RIGHT KILL
-			if x < 6 and y is not limity-value and y is not limity:
-				if bo[y+value][x+1] == -value and bo[y+value*2][x+2] == 0:
-					self.moves.append(((x+2, y+value*2), (x+1, y+value), kills+1))
-					self.posible_moves(bo, True, x+2, y+value*2, kills+1)
+			#(-1, -1) -> no kill
 			#RIGHT
-			if x < 7 and y is not limity and not rec:
+			if x < limitxr and y is not limity and not rec:
 				if bo[y+value][x+1] == 0:
 					self.moves.append(((x+1, y+value), (-1, -1), kills))
+
+			#LEFT
+			if x > limitxl and y is not limity and not rec:
+				if bo[y+value][x-1] == 0:
+					self.moves.append(((x-1, y+value), (-1, -1), kills))
+
+			#RIGHT KILL
+			if x < limitxr-1 and y is not limity-value and y is not limity:
+				if bo[y+value][x+1] is -value and bo[y+value*2][x+2] is 0:
+					self.moves.append(((x+2, y+value*2), (x+1, y+value), kills+1))
+					self.posible_moves(bo, True, x+2, y+value*2, kills+1)
+
 			#LEFT KILL
-			if x > 1 and y is not limity-value and y is not limity:
+			if x > limitxl+1 and y is not limity-value and y is not limity:
 				if bo[y+value][x-1] == -value and bo[y+value*2][x-2] == 0:
 					self.moves.append(((x-2, y+value*2), (x-1, y+value), kills+1))
 					self.posible_moves(bo, True, x-2, y+value*2, kills+1)
-			#LEFT
-			if x > 0 and y is not limity and not rec:
-				if bo[y+value][x-1] == 0:
-					self.moves.append(((x-1, y+value), (-1, -1), kills))
+
+		#QUEEN
 		else:
-			#TOP RIGHT
-			if self.topr:
+			#CHECK FIRST NO KILL MOVEMENTS
+			if no_kill:
+				#TOP RIGHT
 				tx, ty = x, y
+				#Check until find border
 				while tx < 7 and ty > 0:
 					if bo[ty-1][tx+1] == 0:
-						self.moves.append(((tx+1, ty-1), (-1, -1), kills))
+						self.moves.append(((tx+1, ty-1), (-1, -1), 0))
+					#Stop if find own piece or enemy piece
 					else:
 						break
+					#Next position
 					tx += 1
 					ty -= 1
-				
-			#TOP LEFT
-			if self.topl:
+					
+				#TOP LEFT
 				tx, ty = x, y
+				#Check until find border
 				while tx > 0 and ty > 0:
 					if bo[ty-1][tx-1] == 0:
-						self.moves.append(((tx-1, ty-1), (-1, -1), kills))
+						self.moves.append(((tx-1, ty-1), (-1, -1), 0))
+					#Stop if find own piece or enemy piece
 					else:
 						break
+					#Next position
 					tx -= 1
 					ty -= 1
-			#DOWN RIGHT
-			if self.downr:
+				#DOWN RIGHT
 				tx, ty = x, y
+				#Check until find border
 				while tx < 7 and ty < 7:
 					if bo[ty+1][tx+1] == 0:
-						self.moves.append(((tx+1, ty+1), (-1, -1), kills))
+						self.moves.append(((tx+1, ty+1), (-1, -1), 0))
 					else:
 						break
 					tx += 1
 					ty += 1
-			#DOWN LEFT
-			if self.downl:
+				#DOWN LEFT
 				tx, ty = x, y
 				while tx > 0 and ty < 7:
 					if bo[ty+1][tx-1] == 0:
-						self.moves.append(((tx-1, ty+1), (-1, -1), kills))
+						self.moves.append(((tx-1, ty+1), (-1, -1), 0))
+					#Stop if find own piece or enemy piece
 					else:
 						break
+					#Next position
 					tx -= 1
 					ty += 1
-			#TOP RIGHT KILL
-			if self.toprk:
-				tx, ty = x, y
-				kill = 0
-				while tx < 6 and ty > 1:
-					if bo[ty-1][tx+1] is -value and bo[ty-2][tx+2] is 0:
-						ttx, tty = tx+2, ty-2
-						kill += 1
-						cont = -1
-						while ttx < 8 and tty > -1:
-							obj = bo[tty][ttx]
+				self.posible_moves(bo, True, x, y, 0, False, True, True, True, True)
+			#Check for queen kill movements
+			else:
+				#TOP RIGHT KILL
+				if self.toprk:
+					tx, ty = x, y
+					kill = 0
+					#While no border
+					while tx < 6 and ty > 1:
+						#If kill found
+						if bo[ty-1][tx+1] is -value and bo[ty-2][tx+2] is 0:
+							#Set params from kill end
+							ttx, tty = tx+2, ty-2
+							kill += 1
+							cont = -1
+							#From this point check right and left until find border
+							while ttx < 8 and tty > -1:
+								#obj is what we found until reach border
+								obj = bo[tty][ttx]
+								#If blank space add move and say which directions we will look now
+								if obj is 0:
+									#Add move to moves
+									self.moves.append(((ttx, tty), (ttx+cont, tty-cont), kills+kill))
+									
+									#New directions available
+									self.toprk = False
+									self.downlk = False
+									self.downrk = True
+									self.toplk = True
+									
+									#Make move in a copy board search from this new board and then reset board
+									bo[tty-cont][ttx+cont] = 0
+									copy = [row[:] for row in bo]
+									self.posible_moves(copy, True, ttx, tty, kills+kill, False, False, True, True, False)
+									bo[tty-cont][ttx+cont] = -value
+									
+									#Remember original available directions
+									self.toprk = tr
+									self.downlk = dl
+									self.downrk = dr
+									self.toplk = tl
+									
+									#Update params
+									cont -= 1
+									ttx += 1
+									tty -= 1
+								#If enemy break while and restart kill process
+								elif obj is -value:
+									tx, ty = ttx-1, tty+1
+									break
+								#If teammate end search
+								else:
+									tx, ty = -3, -3
+									break
+							#If after kill there are more blank spaces search right and left in them
 							if obj is 0:
-								self.moves.append(((ttx, tty), (ttx+cont, tty-cont), kills+kill))
-								self.toprk = False
-								self.downlk = False
-								self.topl = False
-								self.topr = False
-								self.downl = False
-								self.downr = False
-								self.posible_moves(bo, True, ttx, tty, kills+1)
-								self.toprk = True
-								self.downlk = True
-								self.topl = True
-								self.topr = True
-								self.downl = True
-								self.downr = True
-								cont -= 1
-								ttx += 1
-								tty -= 1
-							elif obj is -value:
-								tx, ty = ttx-1, tty+1
-								break
-							else:
-								tx, ty = ttx+1, tty-1
-								break
-						if obj == 0:
+								tx += 1
+								ty -= 1
+						#If two enemies consec. break
+						elif bo[ty-1][tx+1] is -value and bo[ty-2][tx+2] is -value:
+							break
+						#If teammate break
+						elif bo[ty-1][tx+1] is value:
+							break
+						#If blank space go to the next one
+						else:
 							tx += 1
 							ty -= 1
-					elif bo[ty-1][tx+1] is -value and bo[ty-2][tx+2] is -value:
-						break
-					elif bo[ty-1][tx+1] is value:
-						break
-					else:
-						tx += 1
-						ty -= 1
-			#TOP LEFT KILL
-			if self.toplk:
-				tx, ty = x, y
-				kill = 0
-				while tx > 1 and ty > 1:
-					if bo[ty-1][tx-1] is -value and bo[ty-2][tx-2] is 0:
-						ttx, tty = tx-2, ty-2
-						kill += 1
-						cont = -1
-						while ttx > -1 and tty > -1:
-							obj = bo[tty][ttx]
-							if obj is 0:
-								self.moves.append(((ttx, tty), (ttx-cont, tty-cont), kills+kill))
-								self.toplk = False
-								self.downrk = False
-								self.topl = False
-								self.topr = False
-								self.downl = False
-								self.downr = False
-								self.posible_moves(bo, True, ttx, tty, kills+1)
-								self.toplk = True
-								self.downrk = True
-								self.topl = True
-								self.topr = True
-								self.downl = True
-								self.downr = True
-								cont -= 1
-								ttx -= 1
-								tty -= 1
-							elif obj is -value:
-								tx, ty = ttx+1, tty+1
-								break
-							else:
-								tx, ty = ttx-1, tty-1
-								break
-						if obj == 0:
-							tx -= 1
-							ty -= 1
-					elif bo[ty-1][tx-1] is -value and bo[ty-2][tx-2] is -value:
-						break
-					elif bo[ty-1][tx-1] is value:
-						break
-					else:
-						tx -= 1
-						ty -= 1
-			#DOWN RIGHT KILL
-			if self.downrk:
-				tx, ty = x, y
-				kill = 0
-				while tx < 6 and ty < 6:
-					if bo[ty+1][tx+1] is -value and bo[ty+2][tx+2] is 0:
-						ttx, tty = tx+2, ty+2
-						kill += 1
-						cont = -1
-						while ttx < 8 and tty < 8:
-							obj = bo[tty][ttx]
-							if obj is 0:
-								self.moves.append(((ttx, tty), (ttx+cont, tty+cont), kills+kill))
-								self.toplk = False
-								self.downrk = False
-								self.topl = False
-								self.topr = False
-								self.downl = False
-								self.downr = False
-								self.posible_moves(bo, True, ttx, tty, kills+1)
-								self.toplk = True
-								self.downrk = True
-								self.topl = True
-								self.topr = True
-								self.downl = True
-								self.downr = True
-								cont -= 1
-								ttx += 1
-								tty += 1
-							elif obj is -value:
-								tx, ty = ttx-1, tty-1
-								break
-							else:
-								tx, ty = ttx+1, tty+1
-								break
-						if obj == 0:
-							tx += 1
-							ty += 1
-					elif bo[ty+1][tx+1] is -value and bo[ty+2][tx+2] is -value:
-						break
-					
-					elif bo[ty+1][tx+1] is value:
-						break
-					else:
-						tx += 1
-						ty += 1
-			#DOWN LEFT KILL
-			if self.downlk:
-				tx, ty = x, y
-				kill = 0
-				while tx > 1 and ty < 6:
-					if bo[ty+1][tx-1] is -value and bo[ty+2][tx-2] is 0:
-						ttx, tty = tx-2, ty+2
-						kill += 1
-						cont = -1
-						while ttx > -1 and tty < 8:
-							obj = bo[tty][ttx]
-							if obj is 0:
-								self.moves.append(((ttx, tty), (ttx-cont, tty+cont), kills+kill))
-								self.toprk = False
-								self.downlk = False
-								self.topl = False
-								self.topr = False
-								self.downl = False
-								self.downr = False
-								self.posible_moves(bo, True, ttx, tty, kills+1)
-								self.toprk = True
-								self.downlk = True
-								self.topl = True
-								self.topr = True
-								self.downl = True
-								self.downr = True
-								cont -= 1
-								ttx -= 1
-								tty += 1
-							elif obj is -value:
-								tx, ty = ttx+1, tty-1
-								break
-							else:
-								tx, ty = ttx-1, tty+1
-								break
-						if obj == 0:
-							tx -= 1
-							ty += 1
-					elif bo[ty+1][tx-1] is -value and bo[ty+2][tx-2] is -value:
-						break
-					elif bo[ty+1][tx-1] is value:
-						break
-					else:
-						tx -= 1
-						ty += 1
-			
-						
-
-						
-					
+				#TOP LEFT KILL
+				if self.toplk:
+					tx, ty = x, y
+					kill = 0
+					#While no border
+					while tx > 1 and ty > 1:
+						#If kill found
+						if bo[ty-1][tx-1] is -value and bo[ty-2][tx-2] is 0:
+							#Set params from kill end
+							ttx, tty = tx-2, ty-2
+							kill += 1
+							cont = -1
+							#From this point check right and left until find border
+							while ttx > -1 and tty > -1:
+								#obj is what we found until reach border
+								obj = bo[tty][ttx]
+								#If blank space add move and say which directions we will look now
+								if obj is 0:
+									#Add move to moves
+									self.moves.append(((ttx, tty), (ttx-cont, tty-cont), kills+kill))
+									
+									#New directions available
+									self.toplk = False
+									self.downrk = False
+									self.downlk = True
+									self.toprk = True
 	
-	def select(self, screen, img, pos):
+									#Make move in a copy board search from this new board and then reset board
+									bo[tty-cont][ttx-cont] = 0
+									copy = [row[:] for row in bo]
+									self.posible_moves(copy, True, ttx, tty, kills+kill, False, True, False, False, True)
+									bo[tty-cont][ttx-cont] = -value
+									
+									#Remember original available directions
+									self.toprk = tr
+									self.downlk = dl
+									self.downrk = dr
+									self.toplk = tl
+									
+									#Update params
+									cont -= 1
+									ttx -= 1
+									tty -= 1
+								#If enemy break while and restart kill process
+								elif obj is -value:
+									tx, ty = ttx+1, tty+1
+									break
+								#If teammate end search
+								else:
+									tx, ty = -3, -3
+									break
+							#If after kill there are more blank spaces search right and left in them
+							if obj == 0:
+								tx -= 1
+								ty -= 1
+						#If two enemies consec. break
+						elif bo[ty-1][tx-1] is -value and bo[ty-2][tx-2] is -value:
+							break
+						#If teammate break
+						elif bo[ty-1][tx-1] is value:
+							break
+						#If blank space go to the next one
+						else:
+							tx -= 1
+							ty -= 1
+				#DOWN RIGHT KILL
+				if self.downrk:
+					tx, ty = x, y
+					kill = 0
+					#While no border
+					while tx < 6 and ty < 6:
+						#If kill found
+						if bo[ty+1][tx+1] is -value and bo[ty+2][tx+2] is 0:
+							#Set params from kill end
+							ttx, tty = tx+2, ty+2
+							kill += 1
+							cont = -1
+							#From this point check right and left until find border
+							while ttx < 8 and tty < 8:
+								#obj is what we found until reach border
+								obj = bo[tty][ttx]
+								#If blank space add move and say which directions we will look now
+								if obj is 0:
+									#Add move to moves
+									self.moves.append(((ttx, tty), (ttx+cont, tty+cont), kills+kill))
+									
+									#New directions available
+									self.toprk = True
+									self.downlk = True
+									self.downrk = False
+									self.toplk = False
+									
+									#Make move in a copy board search from this new board and then reset board
+									bo[tty+cont][ttx+cont] = 0
+									copy = [row[:] for row in bo]
+									self.posible_moves(copy, True, ttx, tty, kills+kill, False, True, False, False, True)
+									bo[tty+cont][ttx+cont] = -value
+									
+									#Remember original available directions
+									self.toprk = tr
+									self.downlk = dl
+									self.downrk = dr
+									self.toplk = tl
+									
+									#Update params
+									cont -= 1
+									ttx += 1
+									tty += 1
+								#If enemy break while and restart kill process
+								elif obj is -value:
+									tx, ty = ttx-1, tty-1
+									break
+								#If teammate end search
+								else:
+									tx, ty = -3, -3
+									break
+							#If after kill there are more blank spaces search right and left in them
+							if obj == 0:
+								tx += 1
+								ty += 1
+						#If two enemies consec. break
+						elif bo[ty+1][tx+1] is -value and bo[ty+2][tx+2] is -value:
+							break
+						#If teammate break
+						elif bo[ty+1][tx+1] is value:
+							break
+						#If blank space go to the next one
+						else:
+							tx += 1
+							ty += 1
+				#DOWN LEFT KILL
+				if self.downlk:
+					tx, ty = x, y
+					kill = 0
+					#While no border
+					while tx > 1 and ty < 6:
+						#If kill found
+						if bo[ty+1][tx-1] is -value and bo[ty+2][tx-2] is 0:
+							#Set params from kill end
+							ttx, tty = tx-2, ty+2
+							kill += 1
+							cont = -1
+							#From this point check right and left until find border
+							while ttx > -1 and tty < 8:
+								#obj is what we found until reach border
+								obj = bo[tty][ttx]
+								#If blank space add move and say which directions we will look now
+								if obj is 0:
+									#Add move to moves
+									self.moves.append(((ttx, tty), (ttx-cont, tty+cont), kills+kill))
+									
+									#New directions available
+									self.toprk = False
+									self.downlk = False
+									self.downrk = True
+									self.toplk = True
+									
+									#Make move in a copy board search from this new board and then reset board
+									bo[tty+cont][ttx-cont] = 0
+									copy = [row[:] for row in bo]
+									self.posible_moves(copy, True, ttx, tty, kills+kill, False, False, True, True, False)
+									bo[tty+cont][ttx-cont] = -value
+									
+									#Remember original available directions
+									self.toprk = tr
+									self.downlk = dl
+									self.downrk = dr
+									self.toplk = tl
+									
+									#Update params
+									cont -= 1
+									ttx -= 1
+									tty += 1
+								#If enemy break while and restart kill process
+								elif obj is -value:
+									tx, ty = ttx+1, tty-1
+									break
+								#If teammate end search
+								else:
+									tx, ty = -3, -3
+									break
+							#If after kill there are more blank spaces search right and left in them
+							if obj == 0:
+								tx -= 1
+								ty += 1
+						#If two enemies consec. break
+						elif bo[ty+1][tx-1] is -value and bo[ty+2][tx-2] is -value:
+							break
+						#If teammate break
+						elif bo[ty+1][tx-1] is value:
+							break
+						#If blank space go to the next one
+						else:
+							tx -= 1
+							ty += 1
+
+	
+	def select_piece(self, screen, img, pos):
 		screen.blit(img, pos)
 	
-	def draw(self, img, pos, screen):
+	def draw_piece(self, img, pos, screen):
 		screen.blit(img, pos)
 			
 	def reset_moves(self):
 		self.moves.clear()
+
