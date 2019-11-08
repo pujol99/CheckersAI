@@ -45,7 +45,6 @@ SOFT_BLUE = pygame.Color('0x46f0f0')
 BACK = pygame.Color('0xf58231')
 WHITE = pygame.Color('0xffffff')
 BLACK = pygame.Color('0x000000')
-
 """
 				DRAW FUNCTIONS
 """
