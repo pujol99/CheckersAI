@@ -346,8 +346,6 @@ def game_loop(screen, human_turn, inv, depth_max):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
-				keep_playing = False
-			if event.type == pygame.MOUSEBUTTONUP:
 				xC, yC = pygame.mouse.get_pos()
 				txC, tyC = xC, yC
 		#UPDATE VALUES AND CONDITIONS
@@ -429,7 +427,6 @@ def game_loop(screen, human_turn, inv, depth_max):
 						if ((ix, iy), (i, j)) == (orig, fin):
 							prev_board.append(make_copy(board))
 							make_move(board, ix, iy, i, j, kills, HUMAN)
-							prev = 1
 							human_turn = False
 							#Check if game is over
 							if game_over(board):
