@@ -7,6 +7,7 @@ import os
 #CONSTANTS
 WIDTH = 500
 HEIGHT = 500
+BOARD_IX = 50
 FONT = 'freesansbold.ttf'
 
 #BOARD INFO
