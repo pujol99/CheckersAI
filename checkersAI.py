@@ -46,7 +46,7 @@ BACK = pygame.Color('0xf58231')
 WHITE = pygame.Color('0xffffff')
 BLACK = pygame.Color('0x000000')
 """
-				DRAW FUNCTIONS
+			DRAW FUNCTIONS
 """
 def draw_rect(screen, bgC, fgC, x, y, w, h):
 	pygame.draw.rect(screen, fgC,(x, y, w, h))
