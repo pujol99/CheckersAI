@@ -46,7 +46,7 @@ BACK = pygame.Color('0xf58231')
 WHITE = pygame.Color('0xffffff')
 BLACK = pygame.Color('0x000000')
 """
-			DRAW FUNCTIONS
+				DRAW FUNCTIONS
 """
 def draw_rect(screen, bgC, fgC, x, y, w, h):
 	pygame.draw.rect(screen, fgC,(x, y, w, h))
@@ -345,6 +345,8 @@ def game_loop(screen, human_turn, inv, depth_max):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
+				keep_playing = False
+			if event.type == pygame.MOUSEBUTTONUP:
 				xC, yC = pygame.mouse.get_pos()
 				txC, tyC = xC, yC
 		#UPDATE VALUES AND CONDITIONS
@@ -426,6 +428,7 @@ def game_loop(screen, human_turn, inv, depth_max):
 						if ((ix, iy), (i, j)) == (orig, fin):
 							prev_board.append(make_copy(board))
 							make_move(board, ix, iy, i, j, kills, HUMAN)
+							prev = 1
 							human_turn = False
 							#Check if game is over
 							if game_over(board):
@@ -639,11 +642,8 @@ def main():
 	screen = pygame.display.set_mode((WIDTH, HEIGHT))
 	pygame.display.set_caption('Damas')
 	
-	menu_loop(screen)
-	"""BOARD[6][6].queen = True
-	BOARD[6][6].posible_moves(get_board_values(BOARD))
-	print(BOARD[6][6].moves)"""
 	
+	menu_loop(screen)	
 
 if __name__ == '__main__':
     main()
