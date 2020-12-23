@@ -26,7 +26,7 @@ class Piece:
 		"""
 		#LOCAL VARIABLES
 		value = self.value
-		if value is -1:
+		if value == -1:
 			limity = 0
 			limitxr = 7
 			limitxl = 0
@@ -34,7 +34,7 @@ class Piece:
 			limity = 7
 			limitxr = 7
 			limitxl = 0
-		if x is None:
+		if x == None:
 			x, y = self.x, self.y
 
 		#NOT QUEEN
@@ -52,7 +52,7 @@ class Piece:
 
 			#RIGHT KILL
 			if x < limitxr-1 and y is not limity-value and y is not limity:
-				if bo[y+value][x+1] is -value and bo[y+value*2][x+2] is 0:
+				if bo[y+value][x+1] == -value and bo[y+value*2][x+2] == 0:
 					self.moves.append(((x+2, y+value*2), (x+1, y+value), kills+1))
 					self.posible_moves(bo, True, x+2, y+value*2, kills+1)
 
@@ -122,7 +122,7 @@ class Piece:
 					#While no border
 					while tx < 6 and ty > 1:
 						#If kill found
-						if bo[ty-1][tx+1] is -value and bo[ty-2][tx+2] is 0:
+						if bo[ty-1][tx+1] == -value and bo[ty-2][tx+2] == 0:
 							#Set params from kill end
 							ttx, tty = tx+2, ty-2
 							kill += 1
@@ -132,7 +132,7 @@ class Piece:
 								#obj is what we found until reach border
 								obj = bo[tty][ttx]
 								#If blank space add move and say which directions we will look now
-								if obj is 0:
+								if obj == 0:
 									#Add move to moves
 									self.moves.append(((ttx, tty), (ttx+cont, tty-cont), kills+kill))
 									
@@ -159,7 +159,7 @@ class Piece:
 									ttx += 1
 									tty -= 1
 								#If enemy break while and restart kill process
-								elif obj is -value:
+								elif obj == -value:
 									tx, ty = ttx-1, tty+1
 									break
 								#If teammate end search
@@ -167,14 +167,14 @@ class Piece:
 									tx, ty = -3, -3
 									break
 							#If after kill there are more blank spaces search right and left in them
-							if obj is 0:
+							if obj == 0:
 								tx += 1
 								ty -= 1
 						#If two enemies consec. break
-						elif bo[ty-1][tx+1] is -value and bo[ty-2][tx+2] is -value:
+						elif bo[ty-1][tx+1] == -value and bo[ty-2][tx+2] == -value:
 							break
 						#If teammate break
-						elif bo[ty-1][tx+1] is value:
+						elif bo[ty-1][tx+1] == value:
 							break
 						#If blank space go to the next one
 						else:
@@ -187,7 +187,7 @@ class Piece:
 					#While no border
 					while tx > 1 and ty > 1:
 						#If kill found
-						if bo[ty-1][tx-1] is -value and bo[ty-2][tx-2] is 0:
+						if bo[ty-1][tx-1] == -value and bo[ty-2][tx-2] == 0:
 							#Set params from kill end
 							ttx, tty = tx-2, ty-2
 							kill += 1
@@ -197,7 +197,7 @@ class Piece:
 								#obj is what we found until reach border
 								obj = bo[tty][ttx]
 								#If blank space add move and say which directions we will look now
-								if obj is 0:
+								if obj == 0:
 									#Add move to moves
 									self.moves.append(((ttx, tty), (ttx-cont, tty-cont), kills+kill))
 									
@@ -224,7 +224,7 @@ class Piece:
 									ttx -= 1
 									tty -= 1
 								#If enemy break while and restart kill process
-								elif obj is -value:
+								elif obj == -value:
 									tx, ty = ttx+1, tty+1
 									break
 								#If teammate end search
@@ -236,10 +236,10 @@ class Piece:
 								tx -= 1
 								ty -= 1
 						#If two enemies consec. break
-						elif bo[ty-1][tx-1] is -value and bo[ty-2][tx-2] is -value:
+						elif bo[ty-1][tx-1] == -value and bo[ty-2][tx-2] == -value:
 							break
 						#If teammate break
-						elif bo[ty-1][tx-1] is value:
+						elif bo[ty-1][tx-1] == value:
 							break
 						#If blank space go to the next one
 						else:
@@ -252,7 +252,7 @@ class Piece:
 					#While no border
 					while tx < 6 and ty < 6:
 						#If kill found
-						if bo[ty+1][tx+1] is -value and bo[ty+2][tx+2] is 0:
+						if bo[ty+1][tx+1] == -value and bo[ty+2][tx+2] == 0:
 							#Set params from kill end
 							ttx, tty = tx+2, ty+2
 							kill += 1
@@ -262,7 +262,7 @@ class Piece:
 								#obj is what we found until reach border
 								obj = bo[tty][ttx]
 								#If blank space add move and say which directions we will look now
-								if obj is 0:
+								if obj == 0:
 									#Add move to moves
 									self.moves.append(((ttx, tty), (ttx+cont, tty+cont), kills+kill))
 									
@@ -289,7 +289,7 @@ class Piece:
 									ttx += 1
 									tty += 1
 								#If enemy break while and restart kill process
-								elif obj is -value:
+								elif obj == -value:
 									tx, ty = ttx-1, tty-1
 									break
 								#If teammate end search
@@ -301,10 +301,10 @@ class Piece:
 								tx += 1
 								ty += 1
 						#If two enemies consec. break
-						elif bo[ty+1][tx+1] is -value and bo[ty+2][tx+2] is -value:
+						elif bo[ty+1][tx+1] == -value and bo[ty+2][tx+2] == -value:
 							break
 						#If teammate break
-						elif bo[ty+1][tx+1] is value:
+						elif bo[ty+1][tx+1] == value:
 							break
 						#If blank space go to the next one
 						else:
@@ -317,7 +317,7 @@ class Piece:
 					#While no border
 					while tx > 1 and ty < 6:
 						#If kill found
-						if bo[ty+1][tx-1] is -value and bo[ty+2][tx-2] is 0:
+						if bo[ty+1][tx-1] == -value and bo[ty+2][tx-2] == 0:
 							#Set params from kill end
 							ttx, tty = tx-2, ty+2
 							kill += 1
@@ -327,7 +327,7 @@ class Piece:
 								#obj is what we found until reach border
 								obj = bo[tty][ttx]
 								#If blank space add move and say which directions we will look now
-								if obj is 0:
+								if obj == 0:
 									#Add move to moves
 									self.moves.append(((ttx, tty), (ttx-cont, tty+cont), kills+kill))
 									
@@ -354,7 +354,7 @@ class Piece:
 									ttx -= 1
 									tty += 1
 								#If enemy break while and restart kill process
-								elif obj is -value:
+								elif obj == -value:
 									tx, ty = ttx+1, tty-1
 									break
 								#If teammate end search
@@ -366,10 +366,10 @@ class Piece:
 								tx -= 1
 								ty += 1
 						#If two enemies consec. break
-						elif bo[ty+1][tx-1] is -value and bo[ty+2][tx-2] is -value:
+						elif bo[ty+1][tx-1] == -value and bo[ty+2][tx-2] == -value:
 							break
 						#If teammate break
-						elif bo[ty+1][tx-1] is value:
+						elif bo[ty+1][tx-1] == value:
 							break
 						#If blank space go to the next one
 						else:

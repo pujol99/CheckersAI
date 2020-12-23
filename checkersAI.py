@@ -142,7 +142,7 @@ def calculate_moves(SYM, board):
 					if nkills > max_k:
 						max_k = nkills
 	#If the maxium is 0 simply pass all posible moves
-	if max_k is 0:
+	if max_k == 0:
 		for y, row in enumerate(board):
 			for x, col in enumerate(row):
 				if board[y][x].value == SYM:
@@ -212,9 +212,9 @@ def make_move(board, ix, iy, x, y, to_kill, SYM):
 		a, b = elem
 		board[b][a] = Piece(a, b, 0)
 	
-	if y is 0 and SYM == HUMAN:
+	if y == 0 and SYM == HUMAN:
 		board[y][x].queen = True
-	if y is 7 and SYM == COMP:
+	if y == 7 and SYM == COMP:
 		board[y][x].queen = True
 
 def unmake_move(board, ix, iy, x, y, queen, to_revive, SYM):
@@ -264,7 +264,7 @@ def wins(player, board):
 	"""
 		If enemy has no posible moves you've won
 	"""
-	return len(calculate_moves(-player, board)) is 0
+	return len(calculate_moves(-player, board)) == 0
 	
 def game_over(board):
 	"""
@@ -422,7 +422,7 @@ def game_loop(screen, human_turn, inv, depth_max):
 							first_clik = True
 							select_time = True
 				#Check if BLANK PIECE was hitten and origin is decided
-				elif board[j][i].value is 0 and first_clik:
+				elif board[j][i].value == 0 and first_clik:
 					for move in moves:
 						orig, kills, fin = move
 						if ((ix, iy), (i, j)) == (orig, fin):
