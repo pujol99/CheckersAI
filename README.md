@@ -1,5 +1,5 @@
 # CheckersAI
-Play tic tac toe against the machine 
+Play checkers against the machine 
 
 minmax algorithm used
 
