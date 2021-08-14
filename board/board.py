@@ -1,16 +1,15 @@
 import json
-from piece.piece import Piece
 from piece.black import Black
 from piece.white import White
 from piece.blackQueen import BlackQueen
 from piece.whiteQueen import WhiteQueen
 from piece.blank import Blank
-from constants import *
 
 
 class Board:
     def __init__(self):
         self.board = []
+        self.readFromJson("original")
 
     def readFromJson(self, boardType):
         with open(f"./board/{boardType}.json") as json_file:
@@ -18,7 +17,7 @@ class Board:
 
             for row, pieces in data.items():
                 self.board.append([
-                    pieceType(row, col, piece) for col, piece in enumerate(pieces)
+                    pieceType(int(row), col, piece) for col, piece in enumerate(pieces)
                 ])
 
             print(data)
@@ -28,19 +27,15 @@ class Board:
             row.reverse()
         self.board.reverse()
 
-
-    def make_copy(self):
-        """
-            Makes an independent copy of a board
-        """
+    def makeCopy(self):
         return [row[:] for row in self.board]
 
-    def make_move(board, ix, iy, x, y, to_kill, SYM):
+    def makeMove(board, ix, iy, x, y, to_kill, SYM):
         """
             Place piece in new position and replace old one with a blank space
             If a top or bottom has been reach convert into queen
             Kill all the pieces in the list
-        """
+
         board[y][x] = Piece(x, y, SYM)
         if board[iy][ix].queen is True:
             board[y][x].queen = True
@@ -53,9 +48,9 @@ class Board:
         if y == 0 and SYM == HUMAN:
             board[y][x].queen = True
         if y == 7 and SYM == COMP:
-            board[y][x].queen = True
+            board[y][x].queen = True"""
 
-    def calculate_moves(SYM, board):
+    def calculateMoves(SYM, board):
         """
             We will return all posible moves of a player
             The structure of the posible moves of a piece will be a list of tuples:

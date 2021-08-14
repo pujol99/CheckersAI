@@ -3,13 +3,22 @@ from constants import *
 
 
 class Button:
-    def __init__(self, x, y, width, height, content, screen):
+
+    isSelected = False
+
+    def __init__(self, x, y, width, height, content, property=None, value=None):
         self.x, self.y = x, y
         self.width, self.height = width, height
         self.cx, self.cy = self.computeCenter()
 
-        self.screen = screen
+        self.property = property
+        self.value = value
         self.content = content
+
+    def update(self, settings):
+        if self.property:
+            self.isSelected = (settings[self.property] == self.value)
+
 
     def onHover(self, x, y):
         self.bgColor = self.hv if self.insideX(x) and self.insideY(y) else self.bg
@@ -17,10 +26,10 @@ class Button:
     def clicked(self, x, y):
         return self.insideX(x) and self.insideY(y)
 
-    def draw(self):
-        draw_rect(self.screen.screen, self.bgColor, self.fgColor, self.x, self.y, self.width, self.height)
+    def draw(self, screen):
+        draw_rect(screen, self.hv if self.isSelected else self.bgColor, self.fgColor, self.x, self.y, self.width, self.height)
         if self.content:
-            text(self.screen.screen, 20, self.content, self.bgColor, self.fgColor, self.cx, self.cy)
+            text(screen, 20, self.content, self.hv if self.isSelected else self.bgColor, self.fgColor, self.cx, self.cy)
 
     def insideY(self, y):
         return self.y < y < self.y + self.height
@@ -33,7 +42,7 @@ class Button:
 
 
 class MenuButton(Button):
-    bg = ORANGE
+    bg = SOFT_BLUE
     fgColor = WHITE
     hv = BLACK
 

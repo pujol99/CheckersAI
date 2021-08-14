@@ -1,4 +1,59 @@
-"""def game_loop(screen, human_turn, inv, depth_max):
+from board.state import State
+from ui.button import *
+from stages.loop import Loop
+
+
+class Game(Loop):
+
+    def __init__(self, screen, settings):
+        self.isHumanTurn = settings["isFirst"]
+        self.difficulty = settings["difficulty"]
+
+        self.states = State()
+        self.board = self.states.getCurrent()
+
+        super(Game, self).__init__(screen)
+
+    """
+    behavoir:
+        if human turn
+        compute available pieces to move
+        show available pieces to move
+        wait for human to touch one of this pieces
+            show available moves for that piece
+                wait for human...
+                make move
+        
+    """
+
+    def mainLoop(self):
+        self.running = True
+
+        while self.running:
+            self.catchEvents()
+
+            if self.isHumanTurn:
+                self.humanTurn()
+            else:
+                self.aiTurn()
+
+            # DRAW
+            self.screen.screen.fill(DARK_BLUE)
+            self.screen.screen.blit(BOARD_IMG, (50, 50))
+            drawPieces(self.board, self.screen.screen)
+            self.screen.screen.blit(PREV, (100, 450))
+            self.screen.screen.blit(HINT, (225, 450))
+            self.screen.screen.blit(AGAIN, (350, 450))
+            pygame.display.flip()
+
+
+    def humanTurn(self):
+        pass
+
+    def aiTurn(self):
+        pass
+
+"""def game_loop(self.screen, human_turn, inv, depth_max):
     # LOGIC DOORS
     running = True
     human_turn_copy = human_turn
@@ -153,17 +208,17 @@
                 time.sleep(0.5)
 
         # DRAW
-        screen.fill(DARK_BLUE)
-        screen.blit(BOARD_IMG, (50, 50))
+        self.screen.fill(DARK_BLUE)
+        self.screen.blit(BOARD_IMG, (50, 50))
         if select_time:
-            select_pieces(screen, orign_sel, board, SELECTED_ORIGN)
-            select_pieces(screen, end_sel, board, SELECTED_END)
-            select_pieces(screen, last_sel, board, LAST)
-            select_pieces(screen, kill_sel, board, SELECTED_KILL)
+            select_pieces(self.screen, orign_sel, board, SELECTED_ORIGN)
+            select_pieces(self.screen, end_sel, board, SELECTED_END)
+            select_pieces(self.screen, last_sel, board, LAST)
+            select_pieces(self.screen, kill_sel, board, SELECTED_KILL)
         if not human_turn:
-            text(screen, 20, 'Thinking...', DARK_BLUE, WHITE, 250, 25)
-        draw_pieces(screen, inv, board)
-        screen.blit(PREV, (100, 450))
-        screen.blit(HINT, (225, 450))
-        screen.blit(AGAIN, (350, 450))
+            text(self.screen, 20, 'Thinking...', DARK_BLUE, WHITE, 250, 25)
+        draw_pieces(self.screen, inv, board)
+        self.screen.blit(PREV, (100, 450))
+        self.screen.blit(HINT, (225, 450))
+        self.screen.blit(AGAIN, (350, 450))
         pygame.display.flip()"""

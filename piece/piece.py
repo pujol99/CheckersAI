@@ -1,21 +1,13 @@
+from constants import *
+
 
 class Piece:
-	def __init__(self, x, y):
+	def __init__(self, y, x):
 		self.x = x
 		self.y = y
-		self.moves = []
-		self.queen = False
-		
-		self.toplk = True
-		self.toprk = True
-		self.downlk = True
-		self.downrk = True
+		self.screenX = 50 + x*50
+		self.screenY = 50 + y*50
 	
-	def select_piece(self, screen, img, pos):
-		screen.blit(img, pos)
-	
-	def draw_piece(self, img, pos, screen):
-		screen.blit(img, pos)
-			
-	def reset_moves(self):
-		self.moves.clear()
+	def draw(self, screen):
+		if self.img:
+			screen.blit(self.img, (self.screenX, self.screenY))

@@ -1,6 +1,5 @@
-from piece import Piece
+from piece.piece import *
 
 
 class BlackQueen(Piece):
-    def __init__(self):
-        pass
+    img = BROWNQ

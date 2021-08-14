@@ -1,4 +1,3 @@
-import pygame
 from constants import *
 
 
@@ -19,6 +18,12 @@ def text(screen, size, text, bg, fg, cx, cy):
 	textRect = text.get_rect()
 	textRect.center = (cx, cy)
 	screen.blit(text, textRect)
+
+
+def drawPieces(board, screen):
+	for row in board.board:
+		for col in row:
+			col.draw(screen)
 
 
 def draw_pieces(screen, inv, board):

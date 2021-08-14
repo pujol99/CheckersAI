@@ -1,9 +1,8 @@
-from piece import Piece
+from piece.piece import *
 
 
 class Black(Piece):
-    def __init__(self, row, col):
-        super(row, col)
+    img = BROWN
 
     def posible_moves(self, bo, rec=False, x=None, y=None, kills=0, no_kill=True, tr=True, tl=True, dr=True, dl=True):
         """

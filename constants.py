@@ -1,5 +1,4 @@
 import pygame, os
-from piece.piece import Piece
 
 #CONSTANTS
 WIDTH = 500
@@ -29,6 +28,5 @@ FRONTPAGE = pygame.image.load(os.path.abspath('imgs/frontpage.png'))
 BLUE = pygame.Color('0x4363d8')
 DARK_BLUE = pygame.Color('0x000075')
 SOFT_BLUE = pygame.Color('0x46f0f0')
-ORANGE = pygame.Color('0xf58231')
 WHITE = pygame.Color('0xffffff')
 BLACK = pygame.Color('0x000000')

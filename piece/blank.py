@@ -1,6 +1,5 @@
-from piece import Piece
+from piece.piece import *
 
 
 class Blank(Piece):
-    def __init__(self):
-        pass
+    img = None
