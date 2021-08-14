@@ -1,5 +1,5 @@
-import pygame
-from piece import Piece
+import pygame, os
+from piece.piece import Piece
 
 #CONSTANTS
 WIDTH = 500

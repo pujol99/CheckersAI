@@ -1,8 +1,17 @@
 import pygame
+from constants import *
+
+
+def getIndexClick(screenX, screenY):
+	i = (screenX-50)//50
+	j = (screenY-50)//50
+	return i, j
+
 
 def draw_rect(screen, bgC, fgC, x, y, w, h):
 	pygame.draw.rect(screen, fgC,(x, y, w, h))
 	pygame.draw.rect(screen, bgC,(x+1, y+1, w-2, h-2))
+
 
 def text(screen, size, text, bg, fg, cx, cy):
 	font = pygame.font.Font(FONT, size)
@@ -10,6 +19,7 @@ def text(screen, size, text, bg, fg, cx, cy):
 	textRect = text.get_rect()
 	textRect.center = (cx, cy)
 	screen.blit(text, textRect)
+
 
 def draw_pieces(screen, inv, board):
 	"""
@@ -34,6 +44,7 @@ def draw_pieces(screen, inv, board):
 			elif board[y][x].value == tHUMAN and board[y][x].queen:
 				board[y][x].draw_piece(BROWNQ, (50+x*50, 50+y*50), screen)
 
+
 def select_pieces(screen, list, board, col):
 	"""
 		Call pieces inside diferent lists to be selected
@@ -41,6 +52,7 @@ def select_pieces(screen, list, board, col):
 	for elem in list:
 		x, y = elem
 		board[y][x].select_piece(screen, col, (50+x*50, 50+y*50))
+
 
 def clear_selections(lists):
 	"""
