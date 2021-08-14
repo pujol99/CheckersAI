@@ -1,4 +1,4 @@
-def game_loop(screen, human_turn, inv, depth_max):
+"""def game_loop(screen, human_turn, inv, depth_max):
     # LOGIC DOORS
     running = True
     human_turn_copy = human_turn
@@ -166,4 +166,4 @@ def game_loop(screen, human_turn, inv, depth_max):
         screen.blit(PREV, (100, 450))
         screen.blit(HINT, (225, 450))
         screen.blit(AGAIN, (350, 450))
-        pygame.display.flip()
+        pygame.display.flip()"""

@@ -11,8 +11,10 @@ def main():
 	screen = Screen(pygame.display.set_mode((WIDTH, HEIGHT)))
 	pygame.display.set_caption('Damas')
 
-	Menu(screen)
-	game_loop(screen)
+	settings = Menu(screen).settings
+	if settings.start:
+		print('Start')
+		#game_loop(screen, settings)
 
 
 if __name__ == '__main__':

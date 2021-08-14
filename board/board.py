@@ -5,6 +5,7 @@ from piece.white import White
 from piece.blackQueen import BlackQueen
 from piece.whiteQueen import WhiteQueen
 from piece.blank import Blank
+from constants import *
 
 
 class Board:
@@ -70,7 +71,7 @@ class Board:
         for y, row in enumerate(board):
             for x, col in enumerate(row):
                 if board[y][x].value == SYM:
-                    board[y][x].posible_moves(get_board_values(board))
+                    #board[y][x].posible_moves(get_board_values(board))
                     for move in board[y][x].moves:
                         end, kills, nkills = move
                         if nkills > max_k:

@@ -2,9 +2,6 @@
 
 class Settings:
     def __init__(self):
-        self.isBlack = False
+        self.isFirst = False
         self.difficulty = 2
-
-    def reset(self):
-        self.isBlack = False
-        self.difficulty = 2
+        self.start = True

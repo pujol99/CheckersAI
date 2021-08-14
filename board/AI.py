@@ -1,17 +1,19 @@
+from constants import *
 
-
+"""
 class AI:
-    def __init__():
+    def __init__(self):
         pass
 
     def evaluate(board):
-        """
+        
+        
             Function to evaluate certain state
             Piece value: 10 + distance from start
             Queen value: 20
             Win value: 120
             :return: score
-        """
+        
         scoreCOMP = 0
         scoreHUMAN = 0
         for y, row in enumerate(board):
@@ -34,21 +36,13 @@ class AI:
         return score
 
     def wins(player, board):
-        """
-            If enemy has no posible moves you've won
-        """
         return len(calculate_moves(-player, board)) == 0
 
     def game_over(board):
-        """
-            If someone wins game over
-        """
+    
         return wins(COMP, board) or wins(HUMAN, board)
 
     def minimax(board, depth, alpha, beta, player):
-        """
-            Minimax algorithm used
-        """
         if player == COMP:
             best = [-1, -1, -1, -1, [], -infinity]
         else:
@@ -87,3 +81,4 @@ class AI:
                 if beta <= alpha:
                     break
         return best
+        """
