@@ -1,6 +1,3 @@
-import time
-from math import inf as infinity
-from ui.utils import *
 from ui.screen import Screen
 from stages.menu import *
 from stages.game import *

@@ -1,4 +1,5 @@
-from .board import Board
+from board.board import Board
+
 
 class State:
     def __init__(self):

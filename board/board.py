@@ -4,138 +4,101 @@ from piece.white import White
 from piece.blackQueen import BlackQueen
 from piece.whiteQueen import WhiteQueen
 from piece.blank import Blank
+from piece.piece import *
+from board.turn import Turn
+from stages.action import *
 
 
 class Board:
     def __init__(self):
-        self.board = []
+        self.pieces = []
         self.readFromJson("original")
 
+        self.turn = Turn()
+        self.addAction(SelectPieceToMove)
+
     def readFromJson(self, boardType):
-        with open(f"./board/{boardType}.json") as json_file:
+        with open(f"./board/boards/{boardType}.json") as json_file:
             data = json.load(json_file)
 
-            for row, pieces in data.items():
-                self.board.append([
-                    pieceType(int(row), col, piece) for col, piece in enumerate(pieces)
-                ])
+        for row, pieces in data.items():
+            self.pieces.append([
+                pieceType(piece)(int(row), col) for col, piece in enumerate(pieces)
+            ])
 
-            print(data)
+    def getPieceIfOrigin(self, xClick, yClick):
+        col, row = getClickIndex(xClick, yClick)
+        piece = self.getPiece(col, row)
+        return piece if piece and piece.isSelected == SELECTED_ORIGN else None
 
-    def invert(self):
-        for row in self.board:
-            row.reverse()
-        self.board.reverse()
+    def getPieceIfEnd(self, xClick, yClick):
+        col, row = getClickIndex(xClick, yClick)
+        piece = self.getPiece(col, row)
+        return piece if piece and piece.isSelected == SELECTED_END else None
+
+    def selectAvailablePieces(self):
+        """
+        Select pieces that can be moved and get more kills
+        """
+        self.unselectAll()
+        humanPieces = [piece
+                       for row in self.pieces
+                       for piece in row
+                       if piece.isHuman and not piece.isBlank]
+
+        for piece in humanPieces:
+            if not self.turn.movesInCache:
+                piece.computeMoves(self)
+            piece.selectAsOrigin()
+
+    def selectAvailableMoves(self):
+        self.unselectAll()
+        self.turn.pieceSelected.selectAsOrigin()
+        for move in self.turn.pieceSelected.moves:
+            move.lastStep().selectAsEnd()
+
+    def unselectAll(self):
+        for row in self.pieces:
+            for piece in row:
+                piece.unselect()
 
     def makeCopy(self):
-        return [row[:] for row in self.board]
+        return [row[:] for row in self.pieces]
 
-    def makeMove(board, ix, iy, x, y, to_kill, SYM):
-        """
-            Place piece in new position and replace old one with a blank space
-            If a top or bottom has been reach convert into queen
-            Kill all the pieces in the list
+    def getPiece(self, col, row):
+        return self.pieces[row][col] if validPos(row, col) else None
 
-        board[y][x] = Piece(x, y, SYM)
-        if board[iy][ix].queen is True:
-            board[y][x].queen = True
-        board[iy][ix] = Piece(ix, iy, 0)
+    def addAction(self, action):
+        self.turn.actions.append(action(self))
 
-        for elem in to_kill:
-            a, b = elem
-            board[b][a] = Piece(a, b, 0)
+    def getPieceMove(self, moveEnd):
+        for move in self.turn.pieceSelected.moves:
+            if move.lastStep() == moveEnd:
+                return move
+        return None
 
-        if y == 0 and SYM == HUMAN:
-            board[y][x].queen = True
-        if y == 7 and SYM == COMP:
-            board[y][x].queen = True"""
-
-    def calculateMoves(SYM, board):
-        """
-            We will return all posible moves of a player
-            The structure of the posible moves of a piece will be a list of tuples:
-                (end, kills, nkills)
-            And we will return a list of tuples:
-            :return: (origen, kills_list, end)
-        """
-        # LOCAL VARIABLES
-        moves = []
-        temp_moves = []
-        max_k = -1
-        # Search which is the maxium kills with a single move we'll look all posible moves of a piece
-        for y, row in enumerate(board):
-            for x, col in enumerate(row):
-                if board[y][x].value == SYM:
-                    #board[y][x].posible_moves(get_board_values(board))
-                    for move in board[y][x].moves:
-                        end, kills, nkills = move
-                        if nkills > max_k:
-                            max_k = nkills
-        # If the maxium is 0 simply pass all posible moves
-        if max_k == 0:
-            for y, row in enumerate(board):
-                for x, col in enumerate(row):
-                    if board[y][x].value == SYM:
-                        for move in board[y][x].moves:
-                            end, kills, nkills = move
-                            moves.append(((x, y), [], end))
-        else:
-            # If not we will look which pieces have the same kills move
-            for y, row in enumerate(board):
-                for x, col in enumerate(row):
-                    if board[y][x].value == SYM:
-                        for move in board[y][x].moves:
-                            end, kills, nkills = move
-                            if nkills == max_k:
-                                temp_moves.append((board[y][x].moves, (x, y)))
-                                break
-            # Each temp _move includes a tuple of posible moves of a piece and its origin
-            # It figures it out the path of this high kill moves by backtracking the number of kills
-            # Ex: (start1, kills, 1) <- (start2, kills, 2) <- (start3, kills, 3) x- (start4, kills, 2)
-            # Result: (start1, kills, start3)
-            for temp_move in temp_moves:
-                # Create a list that will include the index of highest nkills
-                list = []
-                temp_move, orig = temp_move
-                for i, move in enumerate(temp_move):
-                    end, kill, nkills = move
-                    if nkills is max_k:
-                        list.append(i)
-                # For each index of highest kill we go back until find a 1 kill move or end
-                # If going back we find two equal nkills we dismiss one as it corresponds to another path
-                for i in list:
-                    aux = i
-                    kills = []
-                    # append move[aux] kill to the kill list
-                    kills.append(temp_move[aux][1])
-                    # While nkills is at least 1
-                    while temp_move[aux][2] > 1 and aux > 0:
-                        # If two equal consecutive nkills dismiss one
-                        if temp_move[aux][2] == temp_move[aux - 1][2]:
-                            aux -= 1
-                        else:
-                            aux -= 1
-                            kills.append(temp_move[aux][1])
-                    # Create the final move tuple with the origin kills end info
-                    moves.append((orig, kills, temp_move[i][0]))
-
-        # Reset posible moves of the pieces for next state
-        for y, row in enumerate(board):
-            for x, col in enumerate(row):
-                if board[y][x].value == SYM:
-                    board[y][x].reset_moves()
-
-        return moves
+    def finishTurn(self):
+        self.turn = None
 
 
-def pieceType(row, col, id):
+def pieceType(id):
     if id == 1:
-        return Black(row, col)
+        return Black
     if id == -1:
-        return White(row, col)
+        return White
     if id == 2:
-        return BlackQueen(row, col)
+        return BlackQueen
     if id == -2:
-        return WhiteQueen(row, col)
+        return WhiteQueen
     else:
-        return Blank(row, col)
+        return Blank
+
+
+def validPos(row, col):
+    return 0 <= row <= 7 and 0 <= col <= 7
+
+
+def getClickIndex(xClick, yClick):
+    col = (xClick - 50) // 50
+    row = (yClick - 50) // 50
+    return col, row
