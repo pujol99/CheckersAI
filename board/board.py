@@ -6,25 +6,18 @@ from piece.whiteQueen import WhiteQueen
 from piece.blank import Blank
 from piece.piece import *
 from board.turn import Turn
-from stages.action import *
+from board.action import *
 
 
 class Board:
     def __init__(self):
-        self.pieces = []
-        self.readFromJson("original")
+        self.pieces = readFromJson("original")
 
+        self.initializeTurn()
+
+    def initializeTurn(self):
         self.turn = Turn()
         self.addAction(SelectPieceToMove)
-
-    def readFromJson(self, boardType):
-        with open(f"./board/boards/{boardType}.json") as json_file:
-            data = json.load(json_file)
-
-        for row, pieces in data.items():
-            self.pieces.append([
-                pieceType(piece)(int(row), col) for col, piece in enumerate(pieces)
-            ])
 
     def getPieceIfOrigin(self, xClick, yClick):
         col, row = getClickIndex(xClick, yClick)
@@ -37,13 +30,9 @@ class Board:
         return piece if piece and piece.isSelected == SELECTED_END else None
 
     def selectAvailablePieces(self):
-        """
-        Select pieces that can be moved and get more kills
-        """
         self.unselectAll()
         humanPieces = [piece
-                       for row in self.pieces
-                       for piece in row
+                       for piece in self.pieces
                        if piece.isHuman and not piece.isBlank]
 
         for piece in humanPieces:
@@ -58,27 +47,43 @@ class Board:
             move.lastStep().selectAsEnd()
 
     def unselectAll(self):
-        for row in self.pieces:
-            for piece in row:
-                piece.unselect()
+        for piece in self.pieces:
+            piece.unselect()
 
-    def makeCopy(self):
-        return [row[:] for row in self.pieces]
+    def clearAllMoves(self):
+        for piece in self.pieces:
+            piece.moves.clear()
 
     def getPiece(self, col, row):
-        return self.pieces[row][col] if validPos(row, col) else None
+        for piece in self.pieces:
+            if piece.row == row and piece.col == col:
+                return piece
+        return None
 
     def addAction(self, action):
         self.turn.actions.append(action(self))
 
-    def getPieceMove(self, moveEnd):
+    def getMove(self, moveEnd):
         for move in self.turn.pieceSelected.moves:
             if move.lastStep() == moveEnd:
                 return move
         return None
 
-    def finishTurn(self):
+    def endTurn(self):
         self.turn = None
+
+    def getBlankPiece(self):
+        return Blank
+
+
+def readFromJson(boardType):
+    with open(f"./board/boards/{boardType}.json") as json_file:
+        data = json.load(json_file)
+        return set([
+                pieceType(piece)(int(row), col)
+                for row, pieces in data.items()
+                for col, piece in enumerate(pieces)
+            ])
 
 
 def pieceType(id):
@@ -92,10 +97,6 @@ def pieceType(id):
         return WhiteQueen
     else:
         return Blank
-
-
-def validPos(row, col):
-    return 0 <= row <= 7 and 0 <= col <= 7
 
 
 def getClickIndex(xClick, yClick):

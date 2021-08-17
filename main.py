@@ -1,15 +1,10 @@
-from ui.screen import Screen
-from stages.menu import *
-from stages.game import *
+from stages.stages import GameStages
 
 
 def main():
-	pygame.init()
-	screen = Screen(pygame.display.set_mode((WIDTH, HEIGHT)))
-	pygame.display.set_caption('Damas')
-
-	Menu(screen)
-	Game(screen)
+	stages = GameStages()
+	stages.initialize()
+	stages.run()
 
 
 if __name__ == '__main__':

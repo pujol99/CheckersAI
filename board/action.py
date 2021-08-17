@@ -12,6 +12,7 @@ class SelectPieceToMove(Action):
     title = "Selecting a piece"
 
     def init(self):
+        self.board.clearAllMoves()
         self.board.selectAvailablePieces()
         self.board.turn.movesInCache = True
 
@@ -20,7 +21,10 @@ class SelectPieceToMove(Action):
             selectedPiece = self.board.getPieceIfOrigin(xC, yC)
             if selectedPiece:
                 self.board.turn.pieceSelected = selectedPiece
-                self.board.addAction(SelectMove)
+                self.finish()
+
+    def finish(self):
+        self.board.addAction(SelectMove)
 
 
 class SelectMove(Action):
@@ -33,9 +37,10 @@ class SelectMove(Action):
         if xC and yC:
             moveEndPiece = self.board.getPieceIfEnd(xC, yC)
             if moveEndPiece:
-                move = self.board.getPieceMove(moveEndPiece)
-                if move:
-                    move.execute()
-                    self.board.finishTurn()
+                self.board.getMove(moveEndPiece).execute()
+                self.finish()
             else:
                 self.board.turn.rollBack()
+
+    def finish(self):
+        self.board.endTurn()

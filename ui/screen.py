@@ -29,9 +29,8 @@ class Screen:
         self.screen.fill(color)
 
     def drawPieces(self, board):
-        for row in board.pieces:
-            for col in row:
-                col.draw(self.screen)
+        for piece in board.pieces:
+            piece.draw(self.screen)
 
     def drawObjects(self):
         for object in self.objects:

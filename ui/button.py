@@ -26,16 +26,16 @@ class Button(UiObject):
     def isClicked(self, x, y):
         return self.insideX(x) and self.insideY(y)
 
-    def draw(self, screen):
-        screen.drawRect(self.getBg(), self.fgColor, self.x, self.y, self.width, self.height)
-        if self.content:
-            screen.drawText(20, self.content, self.getBg(), self.fgColor, self.cx, self.cy)
-
     def insideY(self, y):
         return self.y < y < self.y + self.height
 
     def insideX(self, x):
         return self.x < x < self.x + self.width
+
+    def draw(self, screen):
+        screen.drawRect(self.getBg(), self.fgColor, self.x, self.y, self.width, self.height)
+        if self.content:
+            screen.drawText(20, self.content, self.getBg(), self.fgColor, self.cx, self.cy)
 
     def getBg(self):
         return self.selected if self.isSelected else self.bgColor

@@ -4,20 +4,12 @@ import pygame
 class Loop:
     settings = {
         "running": True,
-        "isFirst": True,
-        "difficulty": 2,
-        "start": False,
-        "play": False,
-        "howTo": False,
-        "prev": False,
-        "again": False,
-        "hint": False,
     }
 
     def __init__(self, screen):
         self.screen = screen
 
-        self.mainLoop()
+        self.init()
 
     def catchEvents(self):
         self.xClick, self.yClick = 0, 0
@@ -41,6 +33,9 @@ class Loop:
         self.screen.drawBg()
         self.renderPipeline()
         self.screen.render()
+
+    def basicLoop(self):
+        self.manageFrame()
 
     def renderPipeline(self):
         self.screen.drawObjects()
