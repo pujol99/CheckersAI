@@ -1,13 +1,13 @@
-from ui.utils import *
 from constants import *
+from ui.uiObject import UiObject
 
 
-class Button:
+class Button(UiObject):
 
     isSelected = False
 
     def __init__(self, x, y, width, height, content, property=None, value=None):
-        self.x, self.y = x, y
+        super().__init__(x, y)
         self.width, self.height = width, height
         self.cx, self.cy = self.computeCenter()
 
@@ -16,14 +16,20 @@ class Button:
         self.content = content
 
     def update(self, settings):
+        # Select if his condition is matched
         if self.property:
             self.isSelected = (settings[self.property] == self.value)
 
     def onHover(self, x, y):
-        self.bgColor = self.hv if self.insideX(x) and self.insideY(y) else self.bg
+        self.bgColor = self.hover if self.insideX(x) and self.insideY(y) else self.background
 
-    def clicked(self, x, y):
+    def isClicked(self, x, y):
         return self.insideX(x) and self.insideY(y)
+
+    def draw(self, screen):
+        screen.drawRect(self.getBg(), self.fgColor, self.x, self.y, self.width, self.height)
+        if self.content:
+            screen.drawText(20, self.content, self.getBg(), self.fgColor, self.cx, self.cy)
 
     def insideY(self, y):
         return self.y < y < self.y + self.height
@@ -32,19 +38,26 @@ class Button:
         return self.x < x < self.x + self.width
 
     def getBg(self):
-        return self.hv if self.isSelected else self.bgColor
+        return self.selected if self.isSelected else self.bgColor
 
     def computeCenter(self):
         return self.x + int(self.width/2), self.y + int(self.height/2)
 
 
 class MenuButton(Button):
-    bg = SOFT_BLUE
     fgColor = WHITE
-    hv = BLACK
+    background = SOFT_BLUE
+    hover = DARK_BLUE
+    selected = BLACK
 
 
 class GameButton(Button):
-    bg = BLUE
-    fgColor = DARK_BLUE
-    hv = BLACK
+    def onHover(self, x, y):
+        pass
+
+    def getBg(self):
+        return None
+
+    def draw(self, screen):
+        if self.content:
+            screen.drawImage(self.content, self.x, self.y)

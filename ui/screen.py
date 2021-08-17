@@ -1,14 +1,15 @@
-import pygame
 from constants import *
 
 
 class Screen:
     def __init__(self, screen):
         self.screen = screen
-        self.buttons = []
+        self.objects = []
 
-    def drawBg(self, img):
-        self.screen.blit(img, (0, 0))
+    def drawBg(self):
+        for object in self.objects:
+            if object.isBg:
+                object.draw(self)
 
     def drawRect(self, bgC, fgC, x, y, w, h):
         pygame.draw.rect(self.screen, fgC, (x, y, w, h))
@@ -21,20 +22,25 @@ class Screen:
         textRect.center = (cx, cy)
         self.screen.blit(text, textRect)
 
+    def drawImage(self, img, x, y):
+        self.screen.blit(img, (x, y))
+
+    def drawColor(self, color):
+        self.screen.fill(color)
+
     def drawPieces(self, board):
         for row in board.pieces:
             for col in row:
                 col.draw(self.screen)
 
-    def drawButton(self, btn):
-        self.drawRect(btn.getBg(), btn.fgColor, btn.x, btn.y, btn.width, btn.height)
-        if btn.content:
-            self.drawText(20, btn.content, btn.getBg(), btn.fgColor, btn.cx, btn.cy)
+    def drawObjects(self):
+        for object in self.objects:
+            if not object.isBg:
+                object.draw(self)
 
-    def drawButtons(self):
-        for button in self.buttons:
-            self.drawButton(button)
-
+    def drawImages(self):
+        for img in self.imgs:
+            img.draw(self)
 
     def render(self):
         pygame.display.flip()

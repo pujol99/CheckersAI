@@ -1,34 +1,26 @@
 from board.state import State
 from ui.button import *
+from ui.uiObject import *
 from stages.loop import Loop
 
 
 class Game(Loop):
-    def __init__(self, screen, settings):
-        self.isHumanTurn = settings["isFirst"]
-        self.difficulty = settings["difficulty"]
-
-        self.states = State()
-        self.board = self.states.getCurrent()
-
-        super(Game, self).__init__(screen)
-
-    """
-    behavoir:
-        if human turn
-        compute available pieces to move
-        show available pieces to move
-        wait for human to touch one of this pieces
-            show available moves for that piece
-                wait for human...
-                make move
-        
-    """
+    states = State()
 
     def mainLoop(self):
-        self.running = True
+        self.isHumanTurn = self.settings["isFirst"]
+        self.difficulty = self.settings["difficulty"]
+        self.board = self.states.getCurrent()
 
-        while self.running:
+        self.screen.objects = [
+            Color(DARK_BLUE),
+            Image(50, 50, BOARD_IMG),
+            GameButton(100, 450, 0, 0, PREV, 'prev', True),
+            GameButton(225, 450, 0, 0, HINT, 'hint', True),
+            GameButton(350, 450, 0, 0, AGAIN, 'again', True)
+        ]
+
+        while self.settings["running"]:
             self.catchEvents()
 
             if self.isHumanTurn:
@@ -36,23 +28,17 @@ class Game(Loop):
             else:
                 self.aiTurn()
 
-            # DRAW
-            self.screen.screen.fill(DARK_BLUE)
-            self.screen.screen.blit(BOARD_IMG, (50, 50))
-            self.screen.drawPieces(self.board)
-            self.screen.screen.blit(PREV, (100, 450))
-            self.screen.screen.blit(HINT, (225, 450))
-            self.screen.screen.blit(AGAIN, (350, 450))
-            self.screen.render()
+            self.manageFrame()
 
     def humanTurn(self):
         if self.board.turn:
-            self.board.turn.doAction(self.xC, self.yC)
+            self.board.turn.doAction(self.xClick, self.yClick)
         else:
-            self.finishHumanTurn()
-
-    def finishHumanTurn(self):
-        self.isHumanTurn = False
+            self.isHumanTurn = False
 
     def aiTurn(self):
         print('AI turn')
+
+    def renderPipeline(self):
+        self.screen.drawObjects()
+        self.screen.drawPieces(self.board)

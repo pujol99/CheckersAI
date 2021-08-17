@@ -8,9 +8,8 @@ def main():
 	screen = Screen(pygame.display.set_mode((WIDTH, HEIGHT)))
 	pygame.display.set_caption('Damas')
 
-	settings = Menu(screen).settings
-	if settings["start"]:
-		Game(screen, settings)
+	Menu(screen)
+	Game(screen)
 
 
 if __name__ == '__main__':
