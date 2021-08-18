@@ -30,14 +30,12 @@ class Game(Loop):
         self.finalize()
 
     def mainLoop(self):
-        self.catchEvents()
+        self.manageFrame()
 
         if self.isHumanTurn:
             self.humanTurn()
         else:
             self.aiTurn()
-
-        self.manageFrame()
 
     def humanTurn(self):
         if self.board.turn:
@@ -46,10 +44,10 @@ class Game(Loop):
             self.finalize()
 
     def aiTurn(self):
-        self.isHumanTurn = True
+        self.finalize()
 
     def finalize(self):
-        self.isHumanTurn = False
+        self.isHumanTurn = not self.isHumanTurn
         self.board.clearAllMoves()
         self.board.unselectAll()
         self.board.initializeTurn()

@@ -5,6 +5,8 @@ import os
 WIDTH = 500
 HEIGHT = 500
 FONT = 'freesansbold.ttf'
+LEFT = -1
+RIGHT = 1
 
 #IMAGES
 ORANGEP = pygame.image.load(os.path.abspath('imgs/orange.png'))

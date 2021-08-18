@@ -1,10 +1,8 @@
-from stages.stages import GameStages
+from stages.stages import Stages
 
 
 def main():
-	stages = GameStages()
-	stages.initialize()
-	stages.run()
+	Stages()
 
 
 if __name__ == '__main__':

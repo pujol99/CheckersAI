@@ -12,7 +12,6 @@ class SelectPieceToMove(Action):
     title = "Selecting a piece"
 
     def init(self):
-        self.board.clearAllMoves()
         self.board.selectAvailablePieces()
         self.board.turn.movesInCache = True
 
@@ -43,4 +42,5 @@ class SelectMove(Action):
                 self.board.turn.rollBack()
 
     def finish(self):
+        self.board.unselectAll()
         self.board.endTurn()

@@ -1,3 +1,4 @@
+from piece.piece import Piece
 
 
 class Move:
@@ -7,19 +8,42 @@ class Move:
         self.board = board
 
     def execute(self):
-        self.board.unselectAll()
         # swap first and last step
+        firstStep = self.firstStep()
         self.board.pieces.add(
-            self.board.getBlankPiece()(self.steps[0].row, self.steps[0].col))
-        self.steps[0].setPos(self.steps[-1].row, self.steps[-1].col)
-        self.board.pieces.remove(self.steps[-1])
+            Piece(firstStep.row, firstStep.col, 'n'))
 
-        # intermidiate steps go blank
-        for step in self.steps[:-2]:
+        lastStep = self.lastStep()
+        firstStep.setPos(lastStep.row, lastStep.col)
+        self.board.pieces.remove(lastStep)
+
+        # intermediate steps go blank
+        for step in self.intermediateSteps():
             self.board.pieces.remove(step)
             self.board.pieces.add(
-                self.board.getBlankPiece()(step.row, step.col)
-            )
+                Piece(step.row, step.col, 'n'))
+
+    def selectMove(self):
+        self.selectStart()
+        self.selectKills()
+        self.selectEnd()
+
+    def selectKills(self):
+        for step in self.intermediateSteps():
+            if not step.isBlank:
+                step.selectedKill()
+
+    def selectStart(self):
+        self.firstStep().selectAsOrigin()
+
+    def selectEnd(self):
+        self.lastStep().selectAsEnd()
+
+    def firstStep(self):
+        return self.steps[0]
 
     def lastStep(self):
         return self.steps[-1]
+
+    def intermediateSteps(self):
+        return self.steps[1:-1]

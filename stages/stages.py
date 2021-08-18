@@ -3,24 +3,33 @@ from stages.gameStages.start import *
 from stages.gameStages.game import *
 
 
-class GameStages:
+class Stages:
     def __init__(self):
         self.stages = []
-        self.screen = Screen(pygame.display.set_mode((WIDTH, HEIGHT)))
+        self.screen = None
+
+        self.initialize()
+        self.run()
 
     def initialize(self):
         pygame.init()
         pygame.display.set_caption('Damas')
-        self.stages.append(Start(self.screen))
+        self.screen = Screen(pygame.display.set_mode((WIDTH, HEIGHT)))
+
+        self.stages.append(
+            Start(self.screen))
 
     def run(self):
-        nextStage = self.stages[-1].loop()
-        if not nextStage:
-            return
+        while self.stages:
+            nextStage = self.currentStage().loop()
+            if not nextStage:
+                return
 
-        self.stages.append(nextStage(self.screen))
-        self.run()
+            self.stages.append(
+                nextStage(self.screen))
 
     def prevStage(self):
         self.stages.pop()
 
+    def currentStage(self):
+        return self.stages[-1]

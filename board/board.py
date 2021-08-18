@@ -1,12 +1,8 @@
 import json
-from piece.black import Black
-from piece.white import White
-from piece.blackQueen import BlackQueen
-from piece.whiteQueen import WhiteQueen
-from piece.blank import Blank
 from piece.piece import *
 from board.turn import Turn
 from board.action import *
+from board.move import *
 
 
 class Board:
@@ -42,9 +38,23 @@ class Board:
 
     def selectAvailableMoves(self):
         self.unselectAll()
-        self.turn.pieceSelected.selectAsOrigin()
         for move in self.turn.pieceSelected.moves:
-            move.lastStep().selectAsEnd()
+            move.selectMove()
+
+    def getDirection(self, piece, dir, positions=1):
+        return self.getPiece(piece.col + dir * positions, piece.row + (-positions if piece.isHuman else positions))
+
+    def getDirectionMove(self, piece, dir):
+        nextPiece = self.getDirection(piece, dir)
+        return Move([piece, nextPiece], 0, self) if nextPiece and nextPiece.isBlank else None
+
+    def getDirectionKill(self, piece, dir):
+        nextPiece = self.getDirection(piece, dir)
+        if nextPiece and not nextPiece.isBlank and nextPiece.isHuman != piece.isHuman:
+            nextNextPiece = self.getDirection(piece, dir, 2)
+            if nextNextPiece and nextNextPiece.isBlank:
+                return Move([piece, nextPiece, nextNextPiece], 1, self)
+        return None
 
     def unselectAll(self):
         for piece in self.pieces:
@@ -72,31 +82,15 @@ class Board:
     def endTurn(self):
         self.turn = None
 
-    def getBlankPiece(self):
-        return Blank
-
 
 def readFromJson(boardType):
     with open(f"./board/boards/{boardType}.json") as json_file:
         data = json.load(json_file)
         return set([
-                pieceType(piece)(int(row), col)
+                Piece(int(row), col, piece)
                 for row, pieces in data.items()
                 for col, piece in enumerate(pieces)
             ])
-
-
-def pieceType(id):
-    if id == 1:
-        return Black
-    if id == -1:
-        return White
-    if id == 2:
-        return BlackQueen
-    if id == -2:
-        return WhiteQueen
-    else:
-        return Blank
 
 
 def getClickIndex(xClick, yClick):

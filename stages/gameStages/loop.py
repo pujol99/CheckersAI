@@ -17,7 +17,6 @@ class Loop:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.settings['running'] = False
-                self.settings['start'] = False
             if event.type == pygame.MOUSEBUTTONUP:
                 self.xClick, self.yClick = pygame.mouse.get_pos()
 
